@@ -1,0 +1,17 @@
+
+
+/*
+ This project uses tailwindcss for styling. The following classes are used to style the Grid component.
+ The Grid component will render a grid of GridCell components. We don't know exactly how many cells there will be, just
+ that it is a square grid of a certain size. The size prop in the component will be used to determine the number of cells in the grid.
+ The grid will fill the parent container, with captions and headings taking advantage of the available space,
+ however the grid cells will be square, and will not stretch to fill the available space if constrained on one axis.
+*/
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(100px, 1fr));
+  grid-gap: 0;
+  /*1rem;*/
+  margin: 1rem;
+}

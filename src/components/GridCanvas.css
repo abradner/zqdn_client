@@ -1,0 +1,45 @@
+/*
+  The GridCanvas component will render an array of 8 Grid components, each with a big heading and a small footer.
+  On wide screens the GridCanvas will render 4 Grid components per row, 2 on narrow screens, and 1 Grid on mobile.
+
+  The GridCanvas component will also render a button that will be used to submit the 'form'.
+ */
+
+.GridCanvas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  grid-gap: 1rem;
+  margin: 1rem;
+}
+
+@media (min-width: 640px) {
+  .GridCanvas {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .GridCanvas {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.GridCanvas__button {
+  display: block;
+  margin: 1rem auto;
+  padding: 1rem;
+  font-size: 1.5rem;
+  background-color: #f1f1f1;
+  border: 1px solid #ccc;
+  color: #333;
+}
+
+.GridCanvas__button:hover {
+  background-color: #ff0;
+}
+
+.GridCanvas__button:active {
+  background-color: #f00;
+  color: #fff;
+}
+
