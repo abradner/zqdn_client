@@ -1,5 +1,5 @@
 import {GridCell} from './GridCell'
-import {useMemo, useState} from 'react'
+import {useState} from 'react'
 import './Grid.css'
 import {AbsoluteInt, toAbsoluteInt} from "../types/AbsoluteInt.ts";
 
@@ -44,93 +44,86 @@ function cellCoveredByHover(
   return !(cellX > xMax || cellY > yMax);
 }
 
-export function Grid(props: GridProps) {
-  const squareCount = props.size ** 2;
-  const mode: GridMode = "place";
+function calcGridFlags(
+  coords: PotentialCoordinateSet,
+  gridSize: number,
+  selectionSize: number
+): GridFlags {
+  const count = gridSize ** 2;
+  const gridFlags =
+    Array<boolean>(count)
+      .fill(false)
 
-  const [activeCell, setActiveCell] = useState<PotenticalCell>(null);
+  if (coords === null) return gridFlags;
+
+  return gridFlags
+    .map(
+      (_, i) => cellCoveredByHover(coords, i, gridSize, selectionSize)
+    );
+}
+
+function calcIntentCoords(
+  activeCell: PotenticalCell,
+  gridSize: AbsoluteInt,
+  selectionSize: AbsoluteInt
+): PotentialCoordinateSet {
+  if (activeCell === null) return null;
+
+  const rowSize = gridSize;
+  const cell_x = activeCell % rowSize;
+  const cell_y = Math.floor(activeCell / rowSize);
+
+  // For any hover or selection intent we want to calculate the top left corner of the selection, using the current cell as the center (or up-and-left one if selection is even)
+  const x = toAbsoluteInt(Math.floor(Math.min(cell_x + (selectionSize - 1) / 2, rowSize - selectionSize)));
+  const y = toAbsoluteInt(Math.floor(Math.min(cell_y + (selectionSize - 1) / 2, rowSize - selectionSize)));
+
+  return [toAbsoluteInt(x), toAbsoluteInt(y)];
+}
+
+// @ts-expect-error TS2488
+function areCoordsEqual([x1, y1]: PotentialCoordinateSet, [x2, y2]: PotentialCoordinateSet): boolean {
+  return x1 === x2 && y1 === y2;
+}
+
+export function Grid(props: GridProps) {
+  const gridSize = toAbsoluteInt(props.size);
+  const squareCount = toAbsoluteInt(gridSize ** 2);
+  const mode: GridMode = "place";
 
   const [gridVals, setVals] = useState(Array<AbsoluteInt>(squareCount).fill(toAbsoluteInt(0)));
 
-
-  const cellCoords = useMemo(
-    (): PotentialCoordinateSet => {
-      if (activeCell === null) return null;
-      const rowSize = props.size;
-      const x = activeCell % rowSize;
-      const y = Math.floor(activeCell / rowSize);
-      return [toAbsoluteInt(x), toAbsoluteInt(y)];
-    }, [props.size, activeCell]
-  );
-
-  const intentCoords: PotentialCoordinateSet = useMemo(
-    (): PotentialCoordinateSet => {
-      const chosen = cellCoords;
-      if (chosen === null) return null;
-      console.log(chosen, props.selectionSize)
-      // For any hover or selection intent we want to calculate the top left corner of the selection, using the current cell as the center (or up-and-left one if selection is even)
-      const x = toAbsoluteInt(Math.floor(Math.max(chosen[0] - (props.selectionSize - 1) / 2, 0)));
-      const y = toAbsoluteInt(Math.floor(Math.max(chosen[1] - (props.selectionSize - 1) / 2, 0)));
-
-      return [toAbsoluteInt(x), toAbsoluteInt(y)];
-    }, [activeCell, cellCoords, props.selectionSize]
-  );
-
   const [hoverCoords, setHoverCoords] = useState<PotentialCoordinateSet>(null);
   const [selectCoords, setSelectCoords] = useState<PotentialCoordinateSet>(null);
-  // const selectCoords = useMemo(
-  //   (): PotentialCoordinateSet => {
-  //     return null;
-  //   }, [activeCell, mode, intentCoords]
-  // );
 
-  const currCellCoveredByHover = useMemo(
-    () => {
-      if (hoverCoords === null) return false;
+  const [hoverGrid, setHoverGrid] = useState<GridFlags>(Array<boolean>(squareCount));
+  const [selectGrid, setSelectGrid] = useState<GridFlags>(Array<boolean>(squareCount));
 
-      return intentCoords === hoverCoords;
-    }, [intentCoords, hoverCoords]
-  );
-
-  const hoverGrid: GridFlags = useMemo(
-    () => {
-      return Array<boolean>(squareCount)
-        .fill(false)
-        .map(
-          (_, i) => cellCoveredByHover(hoverCoords, i, props.size, props.selectionSize)
-        );
-    }, [hoverCoords, squareCount, props.size, props.selectionSize]);
-  const selectGrid: GridFlags = useMemo(
-    () => {
-      return Array<boolean>(squareCount)
-        .fill(false)
-        .map(
-          (_, i) => cellCoveredByHover(selectCoords, i, props.size, props.selectionSize)
-        );
-    }, [selectCoords, squareCount, props.size, props.selectionSize]);
-
-  function handleIntentEvent(i: number, intent: "hover" | "select") {
+  function handleIntentEvent(
+    i: number,
+    intent: "hover" | "select",
+  ) {
     if (mode === "reveal") return;
-    setActiveCell(toAbsoluteInt(i));
 
-    if (intent === "hover") {
-      // if (currCellCoveredByHover) return; // No need to update if the cell is already hovered
+    const intentCoords = calcIntentCoords(toAbsoluteInt(i), gridSize, toAbsoluteInt(props.selectionSize));
+
+    if (
+      intent === "hover" || (
+        intent === "select" && ( // Mobile devices can't hover, so we need to treat the first tap as a hover:
+          !(hoverCoords && areCoordsEqual(intentCoords, hoverCoords))
+        )
+      )
+    ) {
       setHoverCoords(intentCoords);
-    } else { // intent === "select"
-      if (!currCellCoveredByHover) {
-        // treat as a hover event instead - eg on mobile devices
-        handleIntentEvent(i, "hover");
-        return;
-      }
-      setSelectCoords(intentCoords);
+      setHoverGrid(calcGridFlags(intentCoords, gridSize, props.selectionSize));
+    } else if (intent === "select") {
+      setSelectCoords(hoverCoords);
+      setSelectGrid(hoverGrid);
     }
-
   }
 
   function handleHover(i: number, active: boolean) {
     if (!active) {
-      // setActiveCell(null);
-      // setHoverCoords(null);
+      setHoverCoords(null);
       return;
     } else {
       handleIntentEvent(i, "hover");
@@ -141,12 +134,11 @@ export function Grid(props: GridProps) {
     handleIntentEvent(i, "select");
   }
 
-  // iterate over the number of cells in the grid and render a GridCell component for each one
-
   return (
     <>
         <span className={'grid'}>
 
+          {/* iterate over the number of cells in the grid and render a GridCell component for each one */}
           {Array.from({length: squareCount}).map((_, i) => (
             <GridCell key={i}
                       hover={hoverGrid[i]}
