@@ -9,9 +9,11 @@ import {GridMode} from "./GridsCanvas";
 // however the grid cells will be square, and will not stretch to fill the available space if constrained on one axis.
 
 type DisplayGridProps = {
+  id: number,
   size: number,
   values: Array<AbsoluteInt>,
-  id: number,
+  preview: boolean,
+  togglePreview: () => void,
 }
 
 export function DisplayGrid(props: DisplayGridProps) {
@@ -25,7 +27,9 @@ export function DisplayGrid(props: DisplayGridProps) {
   return (
     <>
       <div>
-        <p>Result</p>
+        <p>
+          <button onClick={props.togglePreview} className={props.preview ? 'preview__button active' : 'preview__button'}>{props.preview ? 'Preview' : 'Puzzle'}</button>
+        </p>
         <span className={'grid'}>
 
           {/* iterate over the number of cells in the grid and render a GridCell component for each one */}
