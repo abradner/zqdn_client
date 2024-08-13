@@ -11,7 +11,7 @@ import {GridMode} from "./GridsCanvas";
 type DisplayGridProps = {
   size: number,
   values: Array<AbsoluteInt>,
-
+  id: number,
 }
 
 export function DisplayGrid(props: DisplayGridProps) {
@@ -24,6 +24,8 @@ export function DisplayGrid(props: DisplayGridProps) {
 
   return (
     <>
+      <div>
+        <p>Result</p>
         <span className={'grid'}>
 
           {/* iterate over the number of cells in the grid and render a GridCell component for each one */}
@@ -39,6 +41,7 @@ export function DisplayGrid(props: DisplayGridProps) {
             />
           ))}
         </span>
+      </div>
     </>
   )
 }

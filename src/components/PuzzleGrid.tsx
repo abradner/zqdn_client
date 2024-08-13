@@ -13,6 +13,8 @@ type GridProps = {
   size: number,
   selectionSize: number,
   readonly: boolean,
+  id: number,
+  setOverlay: (overlay: Array<AbsoluteInt>, key: number, action: "add" | "remove") => void,
 }
 
 type GridFlags = Array<boolean>;
@@ -103,7 +105,7 @@ export function PuzzleGrid(props: GridProps) {
   // const [gridVals, setVals] = useState(Array<AbsoluteInt>(squareCount).fill(toAbsoluteInt(0)));
 
   const [hoverCoords, setHoverCoords] = useState<PotentialCoordinateSet>(null);
-  const [selectCoords, setSelectCoords] = useState<PotentialCoordinateSet>(null);
+  // const [selectCoords, setSelectCoords] = useState<PotentialCoordinateSet>(null);
 
   const [hoverGrid, setHoverGrid] = useState<GridFlags>(Array<boolean>(squareCount));
   const [selectGrid, setSelectGrid] = useState<GridFlags>(Array<boolean>(squareCount));
@@ -126,9 +128,13 @@ export function PuzzleGrid(props: GridProps) {
       setHoverCoords(intentCoords);
       setHoverGrid(calcGridFlags(intentCoords, gridSize, props.selectionSize));
     } else if (intent === "select") {
-      setSelectCoords(hoverCoords);
-      console.log(selectCoords);
+      // setSelectCoords(hoverCoords);
       setSelectGrid(hoverGrid);
+      props.setOverlay(
+        hoverGrid.map((hovered) => toAbsoluteInt(hovered ? 1 : 0)),
+        props.id,
+        "add",
+      );
     }
   }
 
@@ -147,6 +153,8 @@ export function PuzzleGrid(props: GridProps) {
 
   return (
     <>
+      <div>
+        <p>{props.selectionSize} x {props.selectionSize}</p>
         <span className={'grid'}>
 
           {/* iterate over the number of cells in the grid and render a GridCell component for each one */}
@@ -162,6 +170,7 @@ export function PuzzleGrid(props: GridProps) {
             />
           ))}
         </span>
+      </div>
     </>
   )
 }
