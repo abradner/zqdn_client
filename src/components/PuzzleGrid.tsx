@@ -141,6 +141,7 @@ export function PuzzleGrid(props: GridProps) {
   function handleHover(i: number, active: boolean) {
     if (!active) {
       setHoverCoords(null);
+      setHoverGrid(Array<boolean>(squareCount).fill(false));
       return;
     } else {
       handleIntentEvent(i, "hover");
@@ -153,7 +154,7 @@ export function PuzzleGrid(props: GridProps) {
 
   return (
     <>
-      <div>
+      <div onMouseOut={() => handleHover(0, false)}>
         <p>{props.selectionSize} x {props.selectionSize}</p>
         <span className={'grid'}>
 
