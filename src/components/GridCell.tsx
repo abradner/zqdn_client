@@ -7,7 +7,7 @@
 import './GridCell.css'
 import classNames from 'classnames';
 import React from 'react';
-import { GridMode } from './Grid';
+import { GridMode } from './GridsCanvas';
 
 export type GridCellProps = {
   key: number,
