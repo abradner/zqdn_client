@@ -6,11 +6,13 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+*storybook.log
 
 node_modules
 dist
 dist-ssr
 *.local
+.yarn/install-state.gz
 
 # Editor directories and files
 .vscode/*
@@ -23,8 +25,9 @@ dist-ssr
 *.sln
 *.sw?
 
-
+# Debug
 vite.config.ts.timestamp-*.mjs
-*storybook.log
 
-.yarn/install-state.gz
+# Sensitive / Secrets
+.env
+.env.local
